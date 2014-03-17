@@ -25,6 +25,7 @@ def get_fund_value(fund_num):
     conn.request("GET", url)
     resp = conn.getresponse()
     data = resp.read()
+    #print data
     parse(data, fund_num)
 
 def parse(data, num):
@@ -67,6 +68,11 @@ def set_proxy(server, port, **kargs):
 set_proxy("10.144.1.10", 8080)
 establish()
 
+import time
+
+print time.ctime()
 print "Name\tValue\tRange\tEstimation\tEstimation Range"
 get_fund_value(110023)
 get_fund_value(110029)
+get_fund_value(260109)
+
