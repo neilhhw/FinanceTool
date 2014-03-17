@@ -7,7 +7,7 @@ PROXY = ""
 PORT = 80
 UTF_CHINESE = "[\u0391-\uFFE5]*"
 GBK_CHINESE = "[\x00-\xff]+"
-URL = "http://fund.eastmoney.com"
+URL = "fund.eastmoney.com"
 
 conn = None
 
@@ -21,7 +21,11 @@ def establish():
 
 def get_fund_value(fund_num):
     """get fund value from fund number"""
-    url = "http://fund.eastmoney.com/%s.html" % fund_num
+    if PROXY != "":
+        url = "http://fund.eastmoney.com/%s.html" % fund_num
+    else:
+        url = "/%s.html" % fund_num
+
     conn.request("GET", url)
     resp = conn.getresponse()
     data = resp.read()
@@ -45,7 +49,7 @@ def parse(data, num):
 
         #print m
         result = {'estimation': val_list[0], 'value': val_list[1],
-                'estimation range': ran_list[0], 'range': ran_list[1], 'name': names[0]}
+                'estimation range': ran_list[0], 'range': ran_list[1], 'name': names[0].decode('gbk').encode('utf-8')}
         print_data(result)
 
 def print_data(result):
@@ -65,7 +69,7 @@ def set_proxy(server, port, **kargs):
     PROXY = server
     PORT = port
 
-set_proxy("10.144.1.10", 8080)
+#set_proxy("10.144.1.10", 8080)
 establish()
 
 import time
