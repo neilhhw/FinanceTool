@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import httplib, urllib, re
+import httplib, urllib, re, json
 
 PROXY = ""
 PORT = 80
 UTF_CHINESE = "[\u0391-\uFFE5]*"
 GBK_CHINESE = "[\x00-\xff]+"
 URL = "fund.eastmoney.com"
+QUERY_URL = "http://fund.eastmoney.com/data/funddataforgznew.aspx?t=basewap&fc="
 
 conn = None
 
@@ -48,9 +49,32 @@ def parse(data, num):
         names = re.findall(name_re, m)
 
         #print m
-        result = {'estimation': val_list[0], 'value': val_list[1],
-                'estimation range': ran_list[0], 'range': ran_list[1], 'name': names[0].decode('gbk').encode('utf-8')}
+        val, ran = query_estimation(num)
+        if len(val_list) > 1:
+            result = {'estimation': val, 'value': val_list[1],
+                      'estimation range': ran, 'range': ran_list[1], 'name': names[0]}
+        else:
+            result = {'estimation': val, 'value': val_list[0],
+                      'estimation range': ran, 'range': ran_list[0], 'name': names[0]}
+
         print_data(result)
+
+def query_estimation(fund_num):
+    """query fund estimation with fund num"""
+    url = QUERY_URL + str(fund_num)
+    #print url
+    conn.request('GET', url)
+    resp = conn.getresponse()
+    data = resp.read()
+    #print data.decode('utf-8').encode('gbk')
+    m = "{.*}"
+    match = re.findall(m, data)
+    if match:
+        d = json.loads(match[0])
+        return d['gsz'].decode('utf-8').encode('gbk'), d['gszzl'].decode('utf-8').encode('gbk')
+    else:
+        return None, None
+
 
 def print_data(result):
     """print data to screen"""
@@ -69,7 +93,7 @@ def set_proxy(server, port, **kargs):
     PROXY = server
     PORT = port
 
-#set_proxy("10.144.1.10", 8080)
+set_proxy("10.144.1.10", 8080)
 establish()
 
 import time
@@ -79,4 +103,7 @@ print "Name\tValue\tRange\tEstimation\tEstimation Range"
 get_fund_value(110023)
 get_fund_value(110029)
 get_fund_value(260109)
-
+get_fund_value(118002)
+get_fund_value(110026)
+get_fund_value(320013)
+get_fund_value(270023)
